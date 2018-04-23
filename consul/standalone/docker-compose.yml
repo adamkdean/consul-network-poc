@@ -1,0 +1,25 @@
+#    ___                      _     ___  ___  ___
+#   / __\___  _ __  ___ _   _| |   / _ \/___\/ __\
+#  / /  / _ \| '_ \/ __| | | | |  / /_)//  // /
+# / /__| (_) | | | \__ \ |_| | | / ___/ \_// /___
+# \____/\___/|_| |_|___/\__,_|_| \/   \___/\____/
+#
+# Consul Network proof of concept
+# (c) 2018 Adam K Dean
+
+version: "3"
+
+services:
+  consul-server:
+    image: "library/consul:1.0.7"
+    hostname: server.consul.local
+    networks:
+      - consul_network
+    ports:
+      - "8400:8400"
+      - "8500:8500"
+      - "8600:8600"
+    command: "agent -server -bootstrap -ui -client 0.0.0.0"
+
+networks:
+  consul_network:
