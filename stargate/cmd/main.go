@@ -9,8 +9,14 @@
 
 package main
 
-import "github.com/adamkdean/consul-network-poc/stargate/internal/app"
+import (
+  "github.com/adamkdean/consul-network-poc/stargate/internal/app"
+)
 
 func main() {
-  app.Test()
+  keepalive := make(chan bool)
+
+  go app.Test()
+  
+  <-keepalive
 }

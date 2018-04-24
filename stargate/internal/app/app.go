@@ -9,8 +9,14 @@
 
 package app
 
-import "fmt"
+import (
+  "fmt"
+  "time"
+)
 
 func Test() {
-  fmt.Println("TEST!")
+  for {
+    time.Sleep(1 * time.Second)
+    fmt.Println("TESTING")
+  }
 }

@@ -10,6 +10,9 @@
 #
 # Variables
 #
+OWNER ?= consul-poc
+PROJECT ?= stargate
+
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
@@ -19,10 +22,12 @@ GOGET=$(GOCMD) get
 BIN_DIR := $(GOPATH)/bin
 GOMETALINTER := $(BIN_DIR)/gometalinter
 
+TAG_PREFIX ?= local
+TAG := $(TAG_PREFIX)/$(OWNER)/$(PROJECT)
+
 SRC ?= $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 PKGS = $(shell go list ./... | grep -v /vendor)
-BUILD ?= $(shell git rev-parse --short HEAD)
-TARGET = bin/$(BUILD)
+TARGET := $(shell pwd)/bin/$(PROJECT)
 ENTRYPOINT = cmd/main.go
 
 #
@@ -43,6 +48,18 @@ clean:
 run: build
 	@$(TARGET)
 
+%:
+	@true
+
+install:
+	dep ensure -v
+
+add:
+	echo $(MAKECMDGOALS) | cut -d ' ' -f2- | xargs dep ensure -add
+
+update:
+	echo $(MAKECMDGOALS) | cut -d ' ' -f2- | xargs dep ensure -update
+
 hooks: .git/hooks/pre-commit
 
 .git/hooks/pre-commit: scripts/hooks/pre-commit.sh
@@ -60,3 +77,9 @@ $(GOMETALINTER):
 
 fmt:
 	gofmt -l -w $(SRC)
+
+docker_build:
+	docker build \
+		--tag $(TAG) \
+		--file build/Dockerfile \
+		.

@@ -6,3 +6,26 @@
 #
 # Consul Network proof of concept
 # (c) 2018 Adam K Dean
+
+version: "3"
+
+services:
+  consul-server:
+    image: "library/consul:1.0.7"
+    hostname: server1.consul.poc
+    networks:
+      - consul_network
+    ports:
+      - "8400:8400"
+      - "8500:8500"
+      - "8600:8600"
+    command: "agent -server -bootstrap -ui -client 0.0.0.0"
+
+  stargate:
+    image: "local/consul-poc/stargate:latest"
+    hostname: stargate.consul.poc
+    networks:
+      - consul_network
+
+networks:
+  consul_network:
