@@ -15,13 +15,10 @@ Proof of concept network using Consul
 
 ## TODO
 
-- [x] Consul demo (3 agents + cluster) `docker-compose.yml`
-- [x] Consul three server bootstrap `docker-compose.yml`
-- [x] Consul standalone bootstrap `docker-compose.yml`
 - [ ] Simple "Stargate" app
   - [ ] Create node "Stargates" if not exist `Consul K/V`
   - [ ] Create node in "Stargates/All" `Consul K/V`
-  - [ ] Consul agent in `docker-compose.yml`
+  - [x] Consul server in `docker-compose.yml`
 - [ ] Simple "Gateway" app
   - [ ] Create node "Gateways" if not exist `Consul K/V`
   - [ ] Create node in "Gateways/All" `Consul K/V`
