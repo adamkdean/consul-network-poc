@@ -22,6 +22,11 @@ type Instance struct {
 	KV      *api.KV
 }
 
+type BasicManifest struct {
+	ID, Service string
+	LastActive int64
+}
+
 func (i *Instance) Initialize(addr string) error {
 	i.Config = api.DefaultConfig()
 	i.Config.Address = addr
