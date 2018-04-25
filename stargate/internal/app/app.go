@@ -12,66 +12,66 @@ package app
 import (
 	"fmt"
 	"time"
-	// "reflect"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/consul"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/state"
 	"github.com/satori/go.uuid"
 )
 
-// Instance ...
-type Instance struct {
+// Stargate is the authoritative DNS layer
+// for the DADI Cloud decentralized network
+type Stargate struct {
 	ID     string
 	Consul *consul.Instance
 }
 
 // Initialize the service, creating a new instance of
 // Consul and updating the service & manifest loop.
-func (i *Instance) Initialize(addr string) {
-	i.Consul = consul.New()
-	i.Must(i.Consul.Initialize(addr))
-	i.UpdateService(state.Initialized)
-	go i.UpdateManifest()
+func (s *Stargate) Initialize(addr string) {
+	s.Consul = consul.New()
+	s.Must(s.Consul.Initialize(addr))
+	s.UpdateService(state.Initialized)
+	go s.UpdateManifest()
 }
 
 // UpdateService updates the current service within Consul
 // with the state that is passed as the service "tag".
-func (i *Instance) UpdateService(state string) {
-	i.Must(i.Consul.RegisterService(i.ID, "stargate", state))
+func (s *Stargate) UpdateService(state string) {
+	s.Must(s.Consul.RegisterService(s.ID, "stargate", state))
 }
 
 // UpdateManifest updates the key value entry for this service
 // continuously, setting LastActive to the current Unix timestamp.
-func (i *Instance) UpdateManifest() {
+func (s *Stargate) UpdateManifest() {
 	for {
-		key := fmt.Sprintf("stargate/%s", i.ID)
+		key := fmt.Sprintf("stargate/%s", s.ID)
 		ts := time.Now().Unix()
 		manifest := &consul.BasicManifest{
-			ID:         i.ID,
+			ID:         s.ID,
 			Service:    "stargate",
 			LastActive: ts,
 		}
-		i.Must(i.Consul.WriteStructToKey(key, manifest))
+		s.Must(s.Consul.WriteStructToKey(key, manifest))
 		time.Sleep(1 * time.Second)
 	}
 }
 
 // Must handles errors and may include error reporting such
 // as posting errors to a message queue before recovering.
-func (i *Instance) Must(err error) {
+func (s *Stargate) Must(err error) {
 	if err != nil {
 		// Log error? Recover?
 		panic(err.Error())
 	}
 }
 
-// New returns a new instance with the ID preset to
+// New returns a new Stargate instance with the ID preset to
 // an RFC4122 unique ID (See https://tools.ietf.org/html/rfc4122).
-func New() *Instance {
+func New() *Stargate {
 	// Generate a UUID using V1 which incorporates both
 	// timestamp and MAC address, and convert to string
 	uuid := fmt.Sprintf("%s", uuid.Must(uuid.NewV1()))
 
-	return &Instance{
+	return &Stargate{
 		ID: uuid,
 	}
 }
