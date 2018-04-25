@@ -14,9 +14,14 @@ import (
 )
 
 func main() {
-	// we would get this from some sort of config
-	consulAddr := "localhost:8500"
+	// create a keepalive channel
+	keepalive := make(chan bool)
 
+	// create new instance of app and initialize it
+	// in real life, we'd get the address from config
 	a := app.New()
-	a.Init(consulAddr)
+	a.Initialize("localhost:8500")
+
+	// live forever
+	<-keepalive
 }
