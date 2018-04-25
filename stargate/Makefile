@@ -25,6 +25,9 @@ GOMETALINTER := $(BIN_DIR)/gometalinter
 TAG_PREFIX ?= local
 TAG := $(TAG_PREFIX)/$(OWNER)/$(PROJECT)
 
+CVARS = CGO_ENABLED=0
+CFLAGS = -a -installsuffix cgo
+
 SRC ?= $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 PKGS = $(shell go list ./... | grep -v /vendor)
 TARGET := $(shell pwd)/bin/$(PROJECT)
@@ -37,7 +40,7 @@ ENTRYPOINT = cmd/main.go
 .PHONY: build clean run hooks fmt test lint up
 
 $(TARGET): $(SRC)
-	$(GOBUILD) -o $(TARGET) $(ENTRYPOINT)
+	$(CVARS) $(GOBUILD) $(CFLAGS) -o $(TARGET) $(ENTRYPOINT)
 
 build: $(TARGET)
 	@true
@@ -60,11 +63,6 @@ add:
 update:
 	echo $(MAKECMDGOALS) | cut -d ' ' -f2- | xargs dep ensure -update
 
-hooks: .git/hooks/pre-commit
-
-.git/hooks/pre-commit: scripts/hooks/pre-commit.sh
-	@cp -f scripts/hooks/pre-commit.sh .git/hooks/pre-commit
-
 test: lint
 	$(GOTEST) $(PKGS)
 
@@ -81,7 +79,7 @@ fmt:
 docker_build:
 	docker build \
 		--tag $(TAG) \
-		--file build/Dockerfile \
+		--file build/package/Dockerfile \
 		.
 
 up: docker_build

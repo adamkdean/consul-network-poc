@@ -11,17 +11,18 @@ package app
 
 import (
 	"fmt"
-	"time"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/consul"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/state"
 	"github.com/satori/go.uuid"
+	"time"
 )
 
 // Stargate is the authoritative DNS layer
 // for the DADI Cloud decentralized network
 type Stargate struct {
-	ID     string
-	Consul *consul.Instance
+	ID           string
+	Consul       *consul.Instance
+	UpdatePeriod int
 }
 
 // Initialize the service, creating a new instance of
@@ -29,14 +30,32 @@ type Stargate struct {
 func (s *Stargate) Initialize(addr string) {
 	s.Consul = consul.New()
 	s.Must(s.Consul.Initialize(addr))
-	s.UpdateService(state.Initialized)
+	s.Must(s.UpdateService(state.Initialized))
 	go s.UpdateManifest()
 }
 
 // UpdateService updates the current service within Consul
 // with the state that is passed as the service "tag".
-func (s *Stargate) UpdateService(state string) {
-	s.Must(s.Consul.RegisterService(s.ID, "stargate", state))
+func (s *Stargate) UpdateService(state string) error {
+	delay := 1
+	attempt := 0
+	maxRetries := 5
+
+	for {
+		attempt++
+		if err := s.Consul.RegisterService(s.ID, "stargate", state); err != nil {
+			fmt.Printf("Error registering service: %v (delay %v)\n", err, delay)
+			if attempt > maxRetries {
+				return fmt.Errorf("Could not register service")
+			}
+
+			time.Sleep(time.Duration(delay) * time.Second)
+			delay *= 2
+		} else {
+			fmt.Printf("Successfully registered service with ID %s and state %s\n", s.ID, state)
+			return nil
+		}
+	}
 }
 
 // UpdateManifest updates the key value entry for this service
@@ -50,8 +69,11 @@ func (s *Stargate) UpdateManifest() {
 			Service:    "stargate",
 			LastActive: ts,
 		}
-		s.Must(s.Consul.WriteStructToKey(key, manifest))
-		time.Sleep(1 * time.Second)
+		fmt.Printf("Updating manifest, setting LastActive to %v\n", ts)
+		if err := s.Consul.WriteStructToKey(key, manifest); err != nil {
+			fmt.Printf("Error updating manifest: %v\n", err)
+		}
+		time.Sleep(time.Duration(s.UpdatePeriod) * time.Second)
 	}
 }
 
@@ -69,9 +91,10 @@ func (s *Stargate) Must(err error) {
 func New() *Stargate {
 	// Generate a UUID using V1 which incorporates both
 	// timestamp and MAC address, and convert to string
-	uuid := fmt.Sprintf("%s", uuid.Must(uuid.NewV1()))
+	uuid := uuid.NewV1().String()
 
 	return &Stargate{
-		ID: uuid,
+		ID:           uuid,
+		UpdatePeriod: 5,
 	}
 }

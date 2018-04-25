@@ -10,6 +10,7 @@
 package main
 
 import (
+	"os"
 	"github.com/adamkdean/consul-network-poc/stargate/internal/app"
 )
 
@@ -17,10 +18,15 @@ func main() {
 	// create a keepalive channel
 	keepalive := make(chan bool)
 
+	// determine consul server location
+	addr := os.Getenv("CONSUL_ADDRESS")
+	if addr == "" {
+		addr = "localhost:8500"
+	}
+
 	// create new instance of app and initialize it
-	// in real life, we'd get the address from config
 	a := app.New()
-	a.Initialize("localhost:8500")
+	a.Initialize(addr)
 
 	// live forever
 	<-keepalive

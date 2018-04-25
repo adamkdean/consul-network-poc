@@ -2,6 +2,15 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/adamkdean/consul-network-poc"
+  packages = [
+    "utils/pkg/consul",
+    "utils/pkg/state"
+  ]
+  revision = "b46e3eace9b6cba1ec72c2b9325b97c617898e9d"
+
+[[projects]]
   name = "github.com/hashicorp/consul"
   packages = ["api"]
   revision = "fb848fc48818f58690db09d14640513aa6bf3c02"
@@ -31,9 +40,15 @@
   packages = ["."]
   revision = "b8bc1bf767474819792c23f32d8286a45736f1c6"
 
+[[projects]]
+  name = "github.com/satori/go.uuid"
+  packages = ["."]
+  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
+  version = "v1.2.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "883d39cb892702ea30223c1cdedbd8ce109d213fe9b1d3652947e9451e2102a1"
+  inputs-digest = "676f3b46aeaff9aad5c0df9bf4278532343eb6e53cc1cf8dafc09b4180b0f4dd"
   solver-name = "gps-cdcl"
   solver-version = 1
