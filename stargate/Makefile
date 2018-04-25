@@ -34,7 +34,7 @@ ENTRYPOINT = cmd/main.go
 # Rules
 #
 .DEFAULT_GOAL: $(TARGET)
-.PHONY: build clean run hooks fmt test lint
+.PHONY: build clean run hooks fmt test lint up
 
 $(TARGET): $(SRC)
 	$(GOBUILD) -o $(TARGET) $(ENTRYPOINT)
@@ -83,3 +83,6 @@ docker_build:
 		--tag $(TAG) \
 		--file build/Dockerfile \
 		.
+
+up: docker_build
+	@docker-compose up

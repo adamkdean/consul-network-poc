@@ -10,13 +10,13 @@
 package main
 
 import (
-  "github.com/adamkdean/consul-network-poc/stargate/internal/app"
+	"github.com/adamkdean/consul-network-poc/stargate/internal/app"
 )
 
 func main() {
-  keepalive := make(chan bool)
+	// we would get this from some sort of config
+	consulAddr := "localhost:8500"
 
-  go app.Test()
-  
-  <-keepalive
+	a := app.New()
+	a.Init(consulAddr)
 }
