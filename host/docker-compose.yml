@@ -6,3 +6,28 @@
 #
 # Consul Network proof of concept
 # (c) 2018 Adam K Dean
+
+version: "3.5"
+
+services:
+  consult-agent:
+    image: "library/consul:1.0.7"
+    container_name: consul-agent-2
+    hostname: consul-agent-2
+    networks:
+      - test-network
+    command: "agent -retry-join consul-server -client 0.0.0.0"
+
+  host:
+    image: "local/consul-poc/host:latest"
+    container_name: host
+    hostname: host
+    environment:
+      - CONSUL_ADDRESS=consul-agent-2:8500
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    external: true
+    name: global
