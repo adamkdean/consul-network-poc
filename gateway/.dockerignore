@@ -1,0 +1,4 @@
+.git/
+bin/
+vendor/
+docker-compose.yml
