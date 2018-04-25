@@ -7,15 +7,15 @@
 # Consul Network proof of concept
 # (c) 2018 Adam K Dean
 
-version: "3"
+version: "3.5"
 
 services:
   consul-server:
     image: "library/consul:1.0.7"
-    container_name: consul
-    hostname: consul
+    container_name: consul-server
+    hostname: consul-server
     networks:
-      - consul_network
+      - test-network
     ports:
       - "8400:8400"
       - "8500:8500"
@@ -27,9 +27,11 @@ services:
     container_name: stargate
     hostname: stargate
     environment:
-      - CONSUL_ADDRESS=consul:8500
+      - CONSUL_ADDRESS=consul-server:8500
     networks:
-      - consul_network
+      - test-network
 
 networks:
-  consul_network:
+  test-network:
+    external: true
+    name: global
