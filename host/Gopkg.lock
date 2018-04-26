@@ -8,7 +8,7 @@
     "utils/pkg/consul",
     "utils/pkg/state"
   ]
-  revision = "b46e3eace9b6cba1ec72c2b9325b97c617898e9d"
+  revision = "77aebfe6b3a28b532327398b6fda200afdd88ed4"
 
 [[projects]]
   name = "github.com/hashicorp/consul"
