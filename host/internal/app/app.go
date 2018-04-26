@@ -34,6 +34,13 @@ func (h *Host) Initialize(consulAddr string) {
 	h.InitializeState()
 	h.InitializeService(consulAddr)
 	h.InitializeManifestUpdateCycle()
+	h.SearchForGateway()
+}
+
+// SearchForGateway ...
+func (h *Host) SearchForGateway() {
+	h.Must(h.State.Transition(state.SearchingForGateway))
+	// TODO
 }
 
 // InitializeState creates a new state machine instance and
