@@ -64,10 +64,18 @@ func (g *Gateway) UpdateManifest() {
 	for {
 		key := fmt.Sprintf("gateway/%s", g.ID)
 		ts := time.Now().Unix()
-		manifest := &consul.BasicManifest{
+		apps := []*consul.GatewayApp{
+			&consul.GatewayApp{
+				User:  "adamkdean",
+				Name:  "hello-world",
+				Image: "registry.dadi.engineer/adamkdean/hello-world",
+			},
+		}
+		manifest := &consul.GatewayManifest{
 			ID:         g.ID,
 			Service:    "gateway",
 			LastActive: ts,
+			Apps:       apps,
 		}
 		fmt.Printf("Updating manifest, setting LastActive to %v\n", ts)
 		if err := g.Consul.WriteStructToKey(key, manifest); err != nil {
