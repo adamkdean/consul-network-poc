@@ -17,7 +17,9 @@ Proof of concept network using Consul
 
 - [x] Simple "Stargate" app
   - [x] Consul server in `docker-compose.yml`
-  - [x] Register service with Consul (with state `INITIALIZED`)
+  - [x] Integrate state machine
+  - [x] Update service state on state change
+  - [x] Register service with Consul (with state `INITIALIZING`)
   - [x] Create key value pair `stargate/<uuid-v4>`
   - [x] Update key value pair `stargate/<uuid-v4>` `LastActive` every _x_ seconds
   - [ ] Prune services where corresponding key value pair last active is > _x_ seconds old
@@ -25,7 +27,9 @@ Proof of concept network using Consul
 - [ ] Simple "Gateway" app
   - [x] Consul agent in `docker-compose.yml`
   - [x] Consul agent connects to Consul server
-  - [x] Register service with Consul (with state `INITIALIZED`)
+  - [ ] Integrate state machine
+  - [ ] Update service state on state change
+  - [ ] Register service with Consul (with state `INITIALIZING`)
   - [x] Create key value pair `gateway/<uuid-v4>`
   - [x] Have list of arbitrary "apps" in key value pair
   - [x] Update key value pair `gateway/<uuid-v4>` `LastActive` every _x_ seconds
@@ -36,7 +40,9 @@ Proof of concept network using Consul
 - [ ] Simple "Host" app
   - [x] Consul agent in `docker-compose.yml`
   - [x] Consul agent connects to Consul server
-  - [x] Register service with Consul (with state `INITIALIZED`)
+  - [ ] Integrate state machine
+  - [ ] Update service state on state change
+  - [ ] Register service with Consul (with state `INITIALIZING`)
   - [x] Create key value pair `host/<uuid-v4>`
   - [x] Update key value pair `host/<uuid-v4>` `LastActive` every _x_ seconds
   - [ ] Set state to `AWAITING_GATEWAY`
