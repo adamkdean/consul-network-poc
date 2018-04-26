@@ -19,7 +19,7 @@ import (
 )
 
 // Stargate is the authoritative DNS layer
-// for the DADI Cloud decentralized network
+// for the DADI Cloud decentralized network.
 type Stargate struct {
 	ID           string
 	Consul       *consul.Instance
@@ -37,16 +37,16 @@ func (s *Stargate) Initialize(addr string) {
 }
 
 // InitializeState creates a new state machine instance and
-// hooks up an event to update the service state on change
+// hooks up an event to update the service state on change.
 func (s *Stargate) InitializeState() {
-	// Create a new state machine
+	// Create a new state machine.
 	s.State = fsm.New()
 	s.State.Initialize(map[string][]string{
 		state.Initializing: []string{state.Ready},
 		state.Ready:        []string{},
 	}, state.Initializing)
 
-	// Update service status on state change
+	// Update service status on state change.
 	ch := make(chan string)
 	go func() {
 		for {
@@ -134,7 +134,7 @@ func (s *Stargate) Must(err error) {
 	}
 }
 
-// Recover is used to recover from panic attacks
+// Recover is used to recover from panic attacks.
 func (s *Stargate) Recover() {
 	if err := recover(); err != nil {
 		fmt.Printf("Recovered from panic: %v\n", err)
@@ -145,7 +145,7 @@ func (s *Stargate) Recover() {
 // an RFC4122 unique ID (See https://tools.ietf.org/html/rfc4122).
 func New() *Stargate {
 	// Generate a UUID using V1 which incorporates both
-	// timestamp and MAC address, and convert to string
+	// timestamp and MAC address, and convert to string.
 	uuid := uuid.NewV1().String()
 
 	return &Stargate{
