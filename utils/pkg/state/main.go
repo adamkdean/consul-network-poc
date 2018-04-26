@@ -10,6 +10,7 @@
 package state
 
 const (
-	Initializing = "INITIALIZING"
-	Ready        = "READY"
+	Initializing  = "INITIALIZING"
+	AwaitingHosts = "AWAITING_HOSTS"
+	Ready         = "READY"
 )
