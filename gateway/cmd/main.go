@@ -12,6 +12,7 @@ package main
 import (
 	"github.com/adamkdean/consul-network-poc/gateway/internal/app"
 	"os"
+	"strconv"
 )
 
 func main() {
@@ -25,14 +26,14 @@ func main() {
 	}
 
 	// determine listen address
-	listenAddr := os.Getenv("LISTEN_ADDRESS")
-	if listenAddr == "" {
-		listenAddr = "0.0.0.0:8000"
+	listenPort, err := strconv.Atoi(os.Getenv("LISTEN_PORT"))
+	if listenPort == 0 || err != nil {
+		listenPort = 8000
 	}
 
 	// create new instance of app and initialize it
 	a := app.New()
-	a.Initialize(consulAddr, listenAddr)
+	a.Initialize(consulAddr, listenPort)
 
 	// live forever
 	<-keepalive

@@ -9,7 +9,7 @@
     "utils/pkg/fsm",
     "utils/pkg/state"
   ]
-  revision = "edf62029346b9b0ba0c4d0c80ff04bd327ac00bb"
+  revision = "8516d811bb513d3a394c4c73fdc0249870d11c51"
 
 [[projects]]
   name = "github.com/gorilla/context"

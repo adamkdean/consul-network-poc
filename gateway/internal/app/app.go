@@ -14,8 +14,8 @@ import (
 	"github.com/adamkdean/consul-network-poc/utils/pkg/consul"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/fsm"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/state"
-	"github.com/satori/go.uuid"
 	"github.com/gorilla/mux"
+	"github.com/satori/go.uuid"
 	"net/http"
 	"time"
 )
@@ -23,22 +23,23 @@ import (
 // Gateway is the application gateway layer
 // for the DADI Cloud decentralized network.
 type Gateway struct {
-	ID           string
-	Consul       *consul.Instance
-	Hosts        []string
-	Router       *mux.Router
-	State        *fsm.StateMachine
-	UpdatePeriod int
+	ID, Address        string
+	Port, UpdatePeriod int
+	Hosts              []string
+	Apps               []*consul.GatewayApp
+	Consul             *consul.Instance
+	Router             *mux.Router
+	State              *fsm.StateMachine
 }
 
 // Initialize the service, creating a new instance of
 // Consul and updating the service & manifest loop.
-func (g *Gateway) Initialize(consulAddr, listenAddr string) {
+func (g *Gateway) Initialize(consulAddr string, listenPort int) {
 	defer g.Recover()
 	g.InitializeState()
-	g.InitializeService(consulAddr)
+	g.InitializeService(consulAddr, listenPort)
 	g.InitializeManifestUpdateCycle()
-	g.InitializeWebServer(listenAddr)
+	g.InitializeWebServer()
 }
 
 // InitializeState creates a new state machine instance and
@@ -65,10 +66,19 @@ func (g *Gateway) InitializeState() {
 }
 
 // InitializeService ...
-func (g *Gateway) InitializeService(addr string) {
-	g.Consul = consul.New()
+func (g *Gateway) InitializeService(consulAddr string, listenPort int) {
+	g.Address = "0.0.0.0" // Usually, you'd use a lookup service
+	g.Port = listenPort
 	g.Hosts = []string{}
-	g.Must(g.Consul.Initialize(addr))
+	g.Apps = []*consul.GatewayApp{
+		&consul.GatewayApp{
+			User:  "adamkdean",
+			Name:  "hello-world",
+			Image: "registry.dadi.engineer/adamkdean/hello-world",
+		},
+	}
+	g.Consul = consul.New()
+	g.Must(g.Consul.Initialize(consulAddr))
 	g.Must(g.UpdateService(g.State.CurrentState))
 	g.Must(g.UpdateManifest())
 }
@@ -116,19 +126,14 @@ func (g *Gateway) UpdateService(state string) error {
 func (g *Gateway) UpdateManifest() error {
 	ts := time.Now().Unix()
 	key := fmt.Sprintf("gateway/%s", g.ID)
-	apps := []*consul.GatewayApp{
-		&consul.GatewayApp{
-			User:  "adamkdean",
-			Name:  "hello-world",
-			Image: "registry.dadi.engineer/adamkdean/hello-world",
-		},
-	}
 	manifest := &consul.GatewayManifest{
 		ID:         g.ID,
 		Service:    "gateway",
-		LastActive: ts,
-		Apps:       apps,
+		Address:    g.Address,
+		Port:       g.Port,
+		Apps:       g.Apps,
 		Hosts:      g.Hosts,
+		LastActive: ts,
 	}
 
 	if err := g.Consul.WriteStructToKey(key, manifest); err != nil {
@@ -141,7 +146,8 @@ func (g *Gateway) UpdateManifest() error {
 
 // InitializeWebServer starts a simple HTTP server and
 // listens for Hosts registering with the Gateway.
-func (g *Gateway) InitializeWebServer(addr string) {
+func (g *Gateway) InitializeWebServer() {
+	addr := fmt.Sprintf("%s:%v", g.Address, g.Port)
 	g.Router = mux.NewRouter()
 	g.Router.HandleFunc("/register/{id}", g.OnRegister).Methods("POST")
 	g.Must(g.State.Transition(state.AwaitingHosts))
