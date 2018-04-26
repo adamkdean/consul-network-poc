@@ -84,3 +84,6 @@ docker_build:
 
 up: docker_build
 	@docker-compose up
+
+down:
+	@docker-compose down
