@@ -12,6 +12,7 @@ package app
 import (
 	"fmt"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/consul"
+	"github.com/adamkdean/consul-network-poc/utils/pkg/fsm"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/state"
 	"github.com/satori/go.uuid"
 	"time"
@@ -22,16 +23,60 @@ import (
 type Stargate struct {
 	ID           string
 	Consul       *consul.Instance
+	State        *fsm.StateMachine
 	UpdatePeriod int
 }
 
 // Initialize the service, creating a new instance of
 // Consul and updating the service & manifest loop.
 func (s *Stargate) Initialize(addr string) {
+	defer s.Recover()
+	s.InitializeState()
+	s.InitializeService(addr)
+	s.InitializeManifestUpdateCycle()
+}
+
+// InitializeState creates a new state machine instance and
+// hooks up an event to update the service state on change
+func (s *Stargate) InitializeState() {
+	// Create a new state machine
+	s.State = fsm.New()
+	s.State.Initialize(map[string][]string{
+		state.Initializing: []string{state.Ready},
+		state.Ready:        []string{},
+	}, state.Initializing)
+
+	// Update service status on state change
+	ch := make(chan string)
+	go func() {
+		for {
+			st := <-ch
+			fmt.Printf("Updating service to state %s\n", st)
+			s.Must(s.UpdateService(st))
+		}
+	}()
+	s.State.OnTransition("*", ch)
+}
+
+// InitializeService ...
+func (s *Stargate) InitializeService(addr string) {
 	s.Consul = consul.New()
 	s.Must(s.Consul.Initialize(addr))
-	s.Must(s.UpdateService(state.Initialized))
-	go s.UpdateManifest()
+	s.Must(s.UpdateService(s.State.CurrentState))
+	s.Must(s.UpdateManifest())
+	s.Must(s.State.Transition(state.Ready))
+}
+
+// InitializeManifestUpdateCycle ...
+func (s *Stargate) InitializeManifestUpdateCycle() {
+	go func() {
+		for {
+			if err := s.UpdateManifest(); err != nil {
+				fmt.Printf("Error updating manifest: %v\n", err)
+			}
+			time.Sleep(time.Duration(s.UpdatePeriod) * time.Second)
+		}
+	}()
 }
 
 // UpdateService updates the current service within Consul
@@ -52,37 +97,47 @@ func (s *Stargate) UpdateService(state string) error {
 			time.Sleep(time.Duration(delay) * time.Second)
 			delay *= 2
 		} else {
+			delay = 1
+			attempt = 0
 			fmt.Printf("Successfully registered service with ID %s and state %s\n", s.ID, state)
 			return nil
 		}
 	}
 }
 
-// UpdateManifest updates the key value entry for this service
-// continuously, setting LastActive to the current Unix timestamp.
-func (s *Stargate) UpdateManifest() {
-	for {
-		key := fmt.Sprintf("stargate/%s", s.ID)
-		ts := time.Now().Unix()
-		manifest := &consul.BasicManifest{
-			ID:         s.ID,
-			Service:    "stargate",
-			LastActive: ts,
-		}
-		fmt.Printf("Updating manifest, setting LastActive to %v\n", ts)
-		if err := s.Consul.WriteStructToKey(key, manifest); err != nil {
-			fmt.Printf("Error updating manifest: %v\n", err)
-		}
-		time.Sleep(time.Duration(s.UpdatePeriod) * time.Second)
+// UpdateManifest updates the key value entry for this
+// service, setting LastActive to the current Unix timestamp.
+func (s *Stargate) UpdateManifest() error {
+	ts := time.Now().Unix()
+	key := fmt.Sprintf("stargate/%s", s.ID)
+	manifest := &consul.BasicManifest{
+		ID:         s.ID,
+		Service:    "stargate",
+		LastActive: ts,
 	}
+
+	if err := s.Consul.WriteStructToKey(key, manifest); err != nil {
+		return fmt.Errorf("error updating manifest: %v", err)
+	}
+
+	fmt.Printf("Updated manifest with LastActive %v\n", ts)
+	return nil
 }
 
 // Must handles errors and may include error reporting such
 // as posting errors to a message queue before recovering.
 func (s *Stargate) Must(err error) {
 	if err != nil {
-		// Log error? Recover?
+		// Log error?
+		fmt.Printf("Panic! %v\n", err)
 		panic(err.Error())
+	}
+}
+
+// Recover is used to recover from panic attacks
+func (s *Stargate) Recover() {
+	if err := recover(); err != nil {
+		fmt.Printf("Recovered from panic: %v\n", err)
 	}
 }
 
