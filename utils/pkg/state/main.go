@@ -10,8 +10,11 @@
 package state
 
 const (
-	Initializing  = "INITIALIZING"
-	AwaitingHosts = "AWAITING_HOSTS"
-	Ready         = "READY"
-	Error         = "ERROR"
+	Initializing        = "INITIALIZING"
+	AwaitingHosts       = "AWAITING_HOSTS"
+	SearchingForGateway = "SEARCHING_FOR_GATEWAY"
+	ConnectingToGateway = "CONNECTING_TO_GATEWAY"
+	GatewayConnected    = "GATEWAY_CONNECTED"
+	Ready               = "READY"
+	Error               = "ERROR"
 )
