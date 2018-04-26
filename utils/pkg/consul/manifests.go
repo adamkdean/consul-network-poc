@@ -9,15 +9,15 @@
 
 package consul
 
-// BasicManifest simply contains an ID, a Service type,
-// and an LastActive int64 unix timestamp
-type BasicManifest struct {
+// StargateManifest contains the data fields
+// pertaining to a network Stargate
+type StargateManifest struct {
 	ID, Service string
 	LastActive  int64
 }
 
-// GatewayManifest extends BasicManifest, adding
-// an array of GatewayApps
+// GatewayManifest contains the data fields
+// pertaining to a network Gateway
 type GatewayManifest struct {
 	ID, Service string
 	LastActive  int64
@@ -30,4 +30,11 @@ type GatewayManifest struct {
 // GatewayApp holds basic information about a User app
 type GatewayApp struct {
 	User, Name, Image string
+}
+
+// HostManifest contains the data fields
+// pertaining to a network Host
+type HostManifest struct {
+	ID, Service string
+	LastActive  int64
 }
