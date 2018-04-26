@@ -22,6 +22,7 @@ type GatewayManifest struct {
 	ID, Service string
 	LastActive  int64
 	Apps        []*GatewayApp
+	Hosts       []string
 }
 
 // GatewayApp holds basic information about a User app
