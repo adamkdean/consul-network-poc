@@ -73,7 +73,7 @@ func (s *StateMachine) OnTransition(st string, ch chan string) error {
 }
 
 func (s *StateMachine) assureStateExists(st string) error {
-	if !funk.Contains(s.States, st) {
+	if !funk.Contains(s.States, st) && st != "*" {
 		return fmt.Errorf("Invalid state: %v", st)
 	}
 	return nil
