@@ -21,6 +21,8 @@ type BasicManifest struct {
 type GatewayManifest struct {
 	ID, Service string
 	LastActive  int64
+	Address     string
+	Port        int
 	Apps        []*GatewayApp
 	Hosts       []string
 }
