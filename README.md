@@ -27,7 +27,7 @@ Proof of concept network using Consul
   - [x] Consul agent connects to Consul server
   - [x] Register service with Consul (with state `INITIALIZED`)
   - [x] Create key value pair `gateway/<uuid-v4>`
-  - [ ] Have list of arbitrary "apps" in key value pair
+  - [x] Have list of arbitrary "apps" in key value pair
   - [x] Update key value pair `gateway/<uuid-v4>` `LastActive` every _x_ seconds
   - [ ] Set state to AWAITING_HOSTS
     - [ ] Listen for connections on port _x_ and update key value pair `server` field with address/port
