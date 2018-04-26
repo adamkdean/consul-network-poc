@@ -24,6 +24,8 @@ services:
     hostname: gateway
     environment:
       - CONSUL_ADDRESS=consul-agent-1:8500
+    ports:
+      - 8000:8000
     networks:
       - test-network
 

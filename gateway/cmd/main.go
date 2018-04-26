@@ -19,14 +19,20 @@ func main() {
 	keepalive := make(chan bool)
 
 	// determine consul server location
-	addr := os.Getenv("CONSUL_ADDRESS")
-	if addr == "" {
-		addr = "localhost:8500"
+	consulAddr := os.Getenv("CONSUL_ADDRESS")
+	if consulAddr == "" {
+		consulAddr = "localhost:8500"
+	}
+
+	// determine listen address
+	listenAddr := os.Getenv("LISTEN_ADDRESS")
+	if listenAddr == "" {
+		listenAddr = "0.0.0.0:8000"
 	}
 
 	// create new instance of app and initialize it
 	a := app.New()
-	a.Initialize(addr)
+	a.Initialize(consulAddr, listenAddr)
 
 	// live forever
 	<-keepalive
