@@ -6,9 +6,10 @@
   name = "github.com/adamkdean/consul-network-poc"
   packages = [
     "utils/pkg/consul",
+    "utils/pkg/fsm",
     "utils/pkg/state"
   ]
-  revision = "77aebfe6b3a28b532327398b6fda200afdd88ed4"
+  revision = "9852ba07a9da52ef6b7e54aef2207a13c64990a4"
 
 [[projects]]
   name = "github.com/hashicorp/consul"
@@ -46,9 +47,15 @@
   revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
   version = "v1.2.0"
 
+[[projects]]
+  name = "github.com/thoas/go-funk"
+  packages = ["."]
+  revision = "14304e8530de7dbb909c8305591b3a8370dd9dbb"
+  version = "0.2"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "676f3b46aeaff9aad5c0df9bf4278532343eb6e53cc1cf8dafc09b4180b0f4dd"
+  inputs-digest = "51d1b00b4dfe7315c6fe7c7889e152a29e3b61fccd730621c810a81e59068b35"
   solver-name = "gps-cdcl"
   solver-version = 1

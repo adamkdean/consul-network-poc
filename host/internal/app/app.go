@@ -12,6 +12,7 @@ package app
 import (
 	"fmt"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/consul"
+	"github.com/adamkdean/consul-network-poc/utils/pkg/fsm"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/state"
 	"github.com/satori/go.uuid"
 	"time"
@@ -22,16 +23,62 @@ import (
 type Host struct {
 	ID           string
 	Consul       *consul.Instance
+	State        *fsm.StateMachine
 	UpdatePeriod int
 }
 
 // Initialize the service, creating a new instance of
 // Consul and updating the service & manifest loop.
-func (h *Host) Initialize(addr string) {
+func (h *Host) Initialize(consulAddr string) {
+	defer h.Recover()
+	h.InitializeState()
+	h.InitializeService(consulAddr)
+	h.InitializeManifestUpdateCycle()
+}
+
+// InitializeState creates a new state machine instance and
+// hooks up an event to update the service state on change.
+func (h *Host) InitializeState() {
+	// Create a new state machine
+	h.State = fsm.New()
+	h.State.Initialize(map[string][]string{
+		state.Initializing:        []string{state.SearchingForGateway},
+		state.SearchingForGateway: []string{state.ConnectingToGateway, state.Error},
+		state.ConnectingToGateway: []string{state.GatewayConnected, state.Error},
+		state.GatewayConnected:    []string{},
+		state.Error:               []string{},
+	}, state.Initializing)
+
+	// Update service status on state change.
+	ch := make(chan string)
+	go func() {
+		for {
+			st := <-ch
+			fmt.Printf("Updating service to state %s\n", st)
+			h.Must(h.UpdateService(st))
+		}
+	}()
+	h.State.OnTransition("*", ch)
+}
+
+// InitializeService ...
+func (h *Host) InitializeService(consulAddr string) {
 	h.Consul = consul.New()
-	h.Must(h.Consul.Initialize(addr))
-	h.Must(h.UpdateService(state.Initialized))
-	go h.UpdateManifest()
+	h.Must(h.Consul.Initialize(consulAddr))
+	h.Must(h.UpdateService(h.State.CurrentState))
+	h.Must(h.UpdateManifest())
+}
+
+// InitializeManifestUpdateCycle ...
+func (h *Host) InitializeManifestUpdateCycle() {
+	go func() {
+		for {
+			if err := h.UpdateManifest(); err != nil {
+				fmt.Printf("Error updating manifest: %v\n", err)
+			}
+			time.Sleep(time.Duration(h.UpdatePeriod) * time.Second)
+		}
+	}()
 }
 
 // UpdateService updates the current service within Consul
@@ -52,28 +99,37 @@ func (h *Host) UpdateService(state string) error {
 			time.Sleep(time.Duration(delay) * time.Second)
 			delay *= 2
 		} else {
+			delay = 1
+			attempt = 0
 			fmt.Printf("Successfully registered service with ID %s and state %s\n", h.ID, state)
 			return nil
 		}
 	}
 }
 
-// UpdateManifest updates the key value entry for this service
-// continuously, setting LastActive to the current Unix timestamp.
-func (h *Host) UpdateManifest() {
-	for {
-		key := fmt.Sprintf("host/%s", h.ID)
-		ts := time.Now().Unix()
-		manifest := &consul.BasicManifest{
-			ID:         h.ID,
-			Service:    "host",
-			LastActive: ts,
-		}
-		fmt.Printf("Updating manifest, setting LastActive to %v\n", ts)
-		if err := h.Consul.WriteStructToKey(key, manifest); err != nil {
-			fmt.Printf("Error updating manifest: %v\n", err)
-		}
-		time.Sleep(time.Duration(h.UpdatePeriod) * time.Second)
+// UpdateManifest updates the key value entry for this
+// service, setting LastActive to the current Unix timestamp.
+func (h *Host) UpdateManifest() error {
+	ts := time.Now().Unix()
+	key := fmt.Sprintf("host/%s", h.ID)
+	manifest := &consul.HostManifest{
+		ID:         h.ID,
+		Service:    "host",
+		LastActive: ts,
+	}
+
+	if err := h.Consul.WriteStructToKey(key, manifest); err != nil {
+		return fmt.Errorf("error updating manifest: %v", err)
+	}
+
+	fmt.Printf("Updated manifest with LastActive %v\n", ts)
+	return nil
+}
+
+// Recover is used to recover from panic attacks.
+func (h *Host) Recover() {
+	if err := recover(); err != nil {
+		fmt.Printf("Recovered from panic: %v\n", err)
 	}
 }
 

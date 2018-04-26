@@ -10,8 +10,8 @@
 package main
 
 import (
-	"os"
 	"github.com/adamkdean/consul-network-poc/host/internal/app"
+	"os"
 )
 
 func main() {
