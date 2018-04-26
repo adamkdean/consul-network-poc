@@ -9,7 +9,7 @@
     "utils/pkg/fsm",
     "utils/pkg/state"
   ]
-  revision = "d5cd6aac5e5b5d2605cc5c9cc0811c355306db61"
+  revision = "9852ba07a9da52ef6b7e54aef2207a13c64990a4"
 
 [[projects]]
   name = "github.com/hashicorp/consul"

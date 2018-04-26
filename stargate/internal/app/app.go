@@ -110,7 +110,7 @@ func (s *Stargate) UpdateService(state string) error {
 func (s *Stargate) UpdateManifest() error {
 	ts := time.Now().Unix()
 	key := fmt.Sprintf("stargate/%s", s.ID)
-	manifest := &consul.BasicManifest{
+	manifest := &consul.StargateManifest{
 		ID:         s.ID,
 		Service:    "stargate",
 		LastActive: ts,
