@@ -11,6 +11,6 @@ package state
 
 const (
 	Initialized = "INITIALIZED"
-	Started = "STARTED"
-	Stopped = "STOPPED"
+	Started     = "STARTED"
+	Stopped     = "STOPPED"
 )
