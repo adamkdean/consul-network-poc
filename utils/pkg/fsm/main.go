@@ -50,6 +50,11 @@ func (s *StateMachine) Transition(to string) error {
 				e <- s.CurrentState
 			}
 
+			// Iterate through all wildcard events
+			for _, e := range s.EventMap["*"] {
+				e <- s.CurrentState
+			}
+
 			return nil
 		}
 	}
