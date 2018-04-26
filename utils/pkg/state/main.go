@@ -13,4 +13,5 @@ const (
 	Initializing  = "INITIALIZING"
 	AwaitingHosts = "AWAITING_HOSTS"
 	Ready         = "READY"
+	Error         = "ERROR"
 )
