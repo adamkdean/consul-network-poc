@@ -33,19 +33,19 @@ Proof of concept network using Consul
   - [x] Create key value pair `gateway/<uuid-v4>`
   - [x] Have list of arbitrary "apps" in key value pair
   - [x] Update key value pair `gateway/<uuid-v4>` `LastActive` every _x_ seconds
-  - [x] Set state to AWAITING_HOSTS
+  - [x] Set state to `AWAITING_HOSTS`
     - [x] Listen for connections on port _x_ and update key value pair `server` field with address/port
     - [x] On connection, perform simple handsake, update key value pair `hosts` field to include host id
 
 - [ ] Simple "Host" app
   - [x] Consul agent in `docker-compose.yml`
   - [x] Consul agent connects to Consul server
-  - [ ] Integrate state machine
-  - [ ] Update service state on state change
-  - [ ] Register service with Consul (with state `INITIALIZING`)
+  - [x] Integrate state machine
+  - [x] Update service state on state change
+  - [x] Register service with Consul (with state `INITIALIZING`)
   - [x] Create key value pair `host/<uuid-v4>`
   - [x] Update key value pair `host/<uuid-v4>` `LastActive` every _x_ seconds
-  - [ ] Set state to `AWAITING_GATEWAY`
+  - [x] Set state to `SEARCHING_FOR_GATEWAY`
   - [ ] Get all `gateway` services with tag `AWAITING_HOSTS`
   - [ ] Attempt connection to gateway, set state to `CONNECTING_TO_GATEWAY`
     - [ ] On failure, attempt next, if list exhausted set state to `AWAITING_GATEWAY`, delay, and start again
