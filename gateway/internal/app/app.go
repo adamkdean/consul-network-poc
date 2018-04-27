@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/consul"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/fsm"
+	"github.com/adamkdean/consul-network-poc/utils/pkg/service"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/state"
 	"github.com/gorilla/mux"
 	"github.com/satori/go.uuid"
@@ -104,7 +105,7 @@ func (g *Gateway) UpdateService(state string) error {
 
 	for {
 		attempt++
-		if err := g.Consul.RegisterService(g.ID, "gateway", state); err != nil {
+		if err := g.Consul.RegisterService(g.ID, service.Gateway, state); err != nil {
 			fmt.Printf("Error registering service: %v (delay %v)\n", err, delay)
 			if attempt > maxRetries {
 				return fmt.Errorf("Could not register service")
@@ -125,10 +126,10 @@ func (g *Gateway) UpdateService(state string) error {
 // service, setting LastActive to the current Unix timestamp.
 func (g *Gateway) UpdateManifest() error {
 	ts := time.Now().Unix()
-	key := fmt.Sprintf("gateway/%s", g.ID)
+	key := fmt.Sprintf("%s/%s", service.Gateway, g.ID)
 	manifest := &consul.GatewayManifest{
 		ID:         g.ID,
-		Service:    "gateway",
+		Service:    service.Gateway,
 		Address:    g.Address,
 		Port:       g.Port,
 		Apps:       g.Apps,
