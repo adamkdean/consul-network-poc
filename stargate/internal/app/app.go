@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/consul"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/fsm"
+	"github.com/adamkdean/consul-network-poc/utils/pkg/service"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/state"
 	"github.com/satori/go.uuid"
 	"time"
@@ -88,7 +89,7 @@ func (s *Stargate) UpdateService(state string) error {
 
 	for {
 		attempt++
-		if err := s.Consul.RegisterService(s.ID, "stargate", state); err != nil {
+		if err := s.Consul.RegisterService(s.ID, service.Stargate, state); err != nil {
 			fmt.Printf("Error registering service: %v (delay %v)\n", err, delay)
 			if attempt > maxRetries {
 				return fmt.Errorf("Could not register service")
@@ -109,10 +110,10 @@ func (s *Stargate) UpdateService(state string) error {
 // service, setting LastActive to the current Unix timestamp.
 func (s *Stargate) UpdateManifest() error {
 	ts := time.Now().Unix()
-	key := fmt.Sprintf("stargate/%s", s.ID)
+	key := fmt.Sprintf("%s/%s", service.Stargate, s.ID)
 	manifest := &consul.StargateManifest{
 		ID:         s.ID,
-		Service:    "stargate",
+		Service:    service.Stargate,
 		LastActive: ts,
 	}
 
