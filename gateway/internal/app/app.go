@@ -46,7 +46,7 @@ func (g *Gateway) Initialize(consulAddr string, listenPort int) {
 // InitializeState creates a new state machine instance and
 // hooks up an event to update the service state on change.
 func (g *Gateway) InitializeState() {
-	// Create a new state machine
+	// Create a new state machine.
 	g.State = fsm.New()
 	g.State.Initialize(map[string][]string{
 		state.Initializing:  []string{state.AwaitingHosts},
@@ -66,9 +66,10 @@ func (g *Gateway) InitializeState() {
 	g.State.OnTransition("*", ch)
 }
 
-// InitializeService ...
+// InitializeService initializes the Consul client, then registers
+// a service with them, and creates the current service manifest.
 func (g *Gateway) InitializeService(consulAddr string, listenPort int) {
-	g.Address = "0.0.0.0" // Usually, you'd use a lookup service
+	g.Address = "0.0.0.0" // Usually, you'd use a lookup service.
 	g.Port = listenPort
 	g.Hosts = []string{}
 	g.Apps = []*consul.GatewayApp{
@@ -84,7 +85,7 @@ func (g *Gateway) InitializeService(consulAddr string, listenPort int) {
 	g.Must(g.UpdateManifest())
 }
 
-// InitializeManifestUpdateCycle ...
+// InitializeManifestUpdateCycle handles the manifest update cycle.
 func (g *Gateway) InitializeManifestUpdateCycle() {
 	go func() {
 		for {
