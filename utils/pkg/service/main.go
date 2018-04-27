@@ -10,7 +10,7 @@
 package service
 
 const (
-	Stargate = "STARGATE"
-	Gateway  = "GATEWAY"
-	Host     = "HOST"
+	Stargate = "stargate"
+	Gateway  = "gateway"
+	Host     = "host"
 )
