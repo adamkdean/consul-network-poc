@@ -7,8 +7,8 @@
 // Consul Network proof of concept
 // (c) 2018 Adam K Dean
 
-// Finite State Machine, based on
-// https://github.com/adamkdean/fsm
+// Package fsm is a Finite State Machine provider
+// based on https://github.com/adamkdean/fsm.
 package fsm
 
 import (

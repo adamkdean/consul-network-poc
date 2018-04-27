@@ -7,6 +7,8 @@
 // Consul Network proof of concept
 // (c) 2018 Adam K Dean
 
+// Package consul provides helper methods to work with Consul
+// in context of the DADI Cloud decentralized network.
 package consul
 
 // StargateManifest contains the data fields

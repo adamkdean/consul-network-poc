@@ -7,8 +7,11 @@
 // Consul Network proof of concept
 // (c) 2018 Adam K Dean
 
+// Package service holds string constants used in
+// the DADI Cloud decentralized network.
 package service
 
+// Service constants.
 const (
 	Stargate = "stargate"
 	Gateway  = "gateway"

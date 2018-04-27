@@ -7,8 +7,11 @@
 // Consul Network proof of concept
 // (c) 2018 Adam K Dean
 
+// Package state holds string constants used in
+// the DADI Cloud decentralized network.
 package state
 
+// State constants.
 const (
 	Initializing        = "INITIALIZING"
 	AwaitingHosts       = "AWAITING_HOSTS"
