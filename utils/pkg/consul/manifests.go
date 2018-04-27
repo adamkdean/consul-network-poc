@@ -10,14 +10,14 @@
 package consul
 
 // StargateManifest contains the data fields
-// pertaining to a network Stargate
+// pertaining to a network Stargate.
 type StargateManifest struct {
 	ID, Service string
 	LastActive  int64
 }
 
 // GatewayManifest contains the data fields
-// pertaining to a network Gateway
+// pertaining to a network Gateway.
 type GatewayManifest struct {
 	ID, Service string
 	LastActive  int64
@@ -27,13 +27,13 @@ type GatewayManifest struct {
 	Hosts       []string
 }
 
-// GatewayApp holds basic information about a User app
+// GatewayApp holds basic information about a User app.
 type GatewayApp struct {
 	User, Name, Image string
 }
 
 // HostManifest contains the data fields
-// pertaining to a network Host
+// pertaining to a network Host.
 type HostManifest struct {
 	ID, Service string
 	LastActive  int64
