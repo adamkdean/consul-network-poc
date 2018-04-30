@@ -27,7 +27,7 @@ type Gateway struct {
 	ID, Address        string
 	Port, UpdatePeriod int
 	Hosts              []string
-	Apps               []*consul.GatewayApp
+	Apps               []*consul.App
 	Consul             *consul.Instance
 	Router             *mux.Router
 	State              *fsm.StateMachine
@@ -72,8 +72,8 @@ func (g *Gateway) InitializeService(consulAddr string, listenPort int) {
 	g.Address = "0.0.0.0" // Usually, you'd use a lookup service.
 	g.Port = listenPort
 	g.Hosts = []string{}
-	g.Apps = []*consul.GatewayApp{
-		&consul.GatewayApp{
+	g.Apps = []*consul.App{
+		&consul.App{
 			User:  "adamkdean",
 			Name:  "hello-world",
 			Image: "registry.dadi.engineer/adamkdean/hello-world",
@@ -128,9 +128,9 @@ func (g *Gateway) UpdateService(state string) error {
 func (g *Gateway) UpdateManifest() error {
 	ts := time.Now().Unix()
 	key := fmt.Sprintf("%s/%s", service.Gateway, g.ID)
-	manifest := &consul.GatewayManifest{
+	manifest := &consul.ServiceManifest{
 		ID:         g.ID,
-		Service:    service.Gateway,
+		Type:       service.Gateway,
 		Address:    g.Address,
 		Port:       g.Port,
 		Apps:       g.Apps,
