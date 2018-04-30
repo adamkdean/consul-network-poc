@@ -18,19 +18,22 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/satori/go.uuid"
 	"net/http"
+	"os"
 	"time"
 )
 
 // Gateway is the application gateway layer
 // for the DADI Cloud decentralized network.
 type Gateway struct {
-	ID, Address        string
-	Port, UpdatePeriod int
-	Hosts              []string
-	Apps               []*consul.App
-	Consul             *consul.Instance
-	Router             *mux.Router
-	State              *fsm.StateMachine
+	ID           string
+	Address      string
+	Port         int
+	Hosts        []string
+	Apps         []*consul.App
+	Consul       *consul.Instance
+	Router       *mux.Router
+	State        *fsm.StateMachine
+	UpdatePeriod int
 }
 
 // Initialize the service, creating a new instance of
@@ -69,7 +72,7 @@ func (g *Gateway) InitializeState() {
 // InitializeService initializes the Consul client, then registers
 // a service with them, and creates the current service manifest.
 func (g *Gateway) InitializeService(consulAddr string, listenPort int) {
-	g.Address = "0.0.0.0" // Usually, you'd use a lookup service.
+	g.Address, _ = os.Hostname()
 	g.Port = listenPort
 	g.Hosts = []string{}
 	g.Apps = []*consul.App{
@@ -142,7 +145,7 @@ func (g *Gateway) UpdateManifest() error {
 		return fmt.Errorf("error updating manifest: %v", err)
 	}
 
-	fmt.Printf("Updated manifest with LastActive %v\n", ts)
+	fmt.Printf("Updated manifest %v\n", manifest)
 	return nil
 }
 
