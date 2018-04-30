@@ -11,32 +11,20 @@
 // in context of the DADI Cloud decentralized network.
 package consul
 
-// StargateManifest contains the data fields
-// pertaining to a network Stargate.
-type StargateManifest struct {
-	ID, Service string
-	LastActive  int64
+// ServiceManifest holds all potential fields that a
+// network service may utilise.
+type ServiceManifest struct {
+	ID         string   `json:"id,omitempty"`
+	Type       string   `json:"type,omitempty"`
+	Address    string   `json:"address,omitempty"`
+	LastActive int64    `json:"last_active,omitempty"`
+	Apps       []*App   `json:"apps,omitempty"`
+	Hosts      []string `json:"hosts,omitempty"`
 }
 
-// GatewayManifest contains the data fields
-// pertaining to a network Gateway.
-type GatewayManifest struct {
-	ID, Service string
-	LastActive  int64
-	Address     string
-	Port        int
-	Apps        []*GatewayApp
-	Hosts       []string
-}
-
-// GatewayApp holds basic information about a User app.
-type GatewayApp struct {
-	User, Name, Image string
-}
-
-// HostManifest contains the data fields
-// pertaining to a network Host.
-type HostManifest struct {
-	ID, Service string
-	LastActive  int64
+// App holds basic information about a User app.
+type App struct {
+	User  string `json:"user,omitempty"`
+	Name  string `json:"name,omitempty"`
+	Image string `json:"image,omitempty"`
 }
