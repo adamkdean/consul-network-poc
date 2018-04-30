@@ -17,6 +17,7 @@ type ServiceManifest struct {
 	ID         string   `json:"id,omitempty"`
 	Type       string   `json:"type,omitempty"`
 	Address    string   `json:"address,omitempty"`
+	Port       int      `json:"port,omitempty"`
 	LastActive int64    `json:"last_active,omitempty"`
 	Apps       []*App   `json:"apps,omitempty"`
 	Hosts      []string `json:"hosts,omitempty"`
