@@ -76,7 +76,7 @@ func (i *Instance) GetService(service, tag string) ([]*api.CatalogService, error
 }
 
 // GetServiceManifests ...
-func (i *Instance) GetServiceManifests(service string) (api.KVPairs, error) {
+func (i *Instance) GetServiceManifests(service string) ([]*api.KVPair, error) {
 	prefix := fmt.Sprintf("%s/", service)
 	kvp, _, err := i.KV.List(prefix, nil)
 	return kvp, err
