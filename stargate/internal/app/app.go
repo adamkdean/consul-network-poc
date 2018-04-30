@@ -145,7 +145,7 @@ func (s *Stargate) UpdateManifest() error {
 		return fmt.Errorf("error updating manifest: %v", err)
 	}
 
-	fmt.Printf("Updated manifest with LastActive %v\n", ts)
+	fmt.Printf("Updated manifest %v\n", manifest)
 	return nil
 }
 
