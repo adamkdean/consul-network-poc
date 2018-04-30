@@ -75,6 +75,21 @@ func (i *Instance) GetService(service, tag string) ([]*api.CatalogService, error
 	return s, nil
 }
 
+// GetServiceManifest ...
+func (i *Instance) GetServiceManifest(sv, id string) (*ServiceManifest, error) {
+	// Get a list of key value pairs for service prefix
+	key := fmt.Sprintf("%s/%s", sv, id)
+	kvp, _, err := i.KV.Get(key, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse the key value pair into a ServiceManifest struct
+	m := &ServiceManifest{}
+	json.Unmarshal(kvp.Value, &m)
+	return m, nil
+}
+
 // GetServiceManifests ...
 func (i *Instance) GetServiceManifests(sv string) ([]*ServiceManifest, error) {
 	// Get a list of key value pairs for service prefix
