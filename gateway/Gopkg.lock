@@ -10,7 +10,7 @@
     "utils/pkg/service",
     "utils/pkg/state"
   ]
-  revision = "b146b4e816a5e809c85a8b062f82f399cb83929a"
+  revision = "d263b4596bebb5bc48f5a52712bdc00fe52f3b9d"
 
 [[projects]]
   name = "github.com/gorilla/context"
