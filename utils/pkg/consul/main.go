@@ -80,11 +80,9 @@ func (i *Instance) GetServiceManifest(sv, id string) (*ServiceManifest, error) {
 	// Get a list of key value pairs for service prefix
 	key := fmt.Sprintf("%s/%s", sv, id)
 	kvp, _, err := i.KV.Get(key, nil)
-	if err != nil {
+	if err != nil || kvp == nil {
 		return nil, err
 	}
-
-	fmt.Printf("%s: %v\n", key, kvp)
 
 	// Parse the key value pair into a ServiceManifest struct
 	m := &ServiceManifest{}
