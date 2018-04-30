@@ -20,8 +20,6 @@ services:
 
   host:
     image: "local/consul-poc/host:latest"
-    container_name: host
-    hostname: host
     environment:
       - CONSUL_ADDRESS=consul-agent-2:8500
     networks:
