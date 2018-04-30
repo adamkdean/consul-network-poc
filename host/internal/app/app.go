@@ -13,13 +13,14 @@ import (
 	"fmt"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/consul"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/fsm"
+	"github.com/adamkdean/consul-network-poc/utils/pkg/service"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/state"
 	"github.com/satori/go.uuid"
 	"time"
 )
 
 // Host is the application host layer for
-// the DADI Cloud decentralized network
+// the DADI Cloud decentralized network.
 type Host struct {
 	ID           string
 	Consul       *consul.Instance
@@ -35,12 +36,6 @@ func (h *Host) Initialize(consulAddr string) {
 	h.InitializeService(consulAddr)
 	h.InitializeManifestUpdateCycle()
 	h.SearchForGateway()
-}
-
-// SearchForGateway ...
-func (h *Host) SearchForGateway() {
-	h.Must(h.State.Transition(state.SearchingForGateway))
-	// TODO
 }
 
 // InitializeState creates a new state machine instance and
@@ -68,7 +63,8 @@ func (h *Host) InitializeState() {
 	h.State.OnTransition("*", ch)
 }
 
-// InitializeService ...
+// InitializeService initializes the Consul client, then registers
+// a service with them, and creates the current service manifest.
 func (h *Host) InitializeService(consulAddr string) {
 	h.Consul = consul.New()
 	h.Must(h.Consul.Initialize(consulAddr))
@@ -76,7 +72,7 @@ func (h *Host) InitializeService(consulAddr string) {
 	h.Must(h.UpdateManifest())
 }
 
-// InitializeManifestUpdateCycle ...
+// InitializeManifestUpdateCycle handles the manifest update cycle.
 func (h *Host) InitializeManifestUpdateCycle() {
 	go func() {
 		for {
@@ -97,7 +93,7 @@ func (h *Host) UpdateService(state string) error {
 
 	for {
 		attempt++
-		if err := h.Consul.RegisterService(h.ID, "host", state); err != nil {
+		if err := h.Consul.RegisterService(h.ID, service.Host, state); err != nil {
 			fmt.Printf("Error registering service: %v (delay %v)\n", err, delay)
 			if attempt > maxRetries {
 				return fmt.Errorf("Could not register service")
@@ -118,10 +114,10 @@ func (h *Host) UpdateService(state string) error {
 // service, setting LastActive to the current Unix timestamp.
 func (h *Host) UpdateManifest() error {
 	ts := time.Now().Unix()
-	key := fmt.Sprintf("host/%s", h.ID)
-	manifest := &consul.HostManifest{
+	key := fmt.Sprintf("%s/%s", service.Host, h.ID)
+	manifest := &consul.ServiceManifest{
 		ID:         h.ID,
-		Service:    "host",
+		Type:       service.Host,
 		LastActive: ts,
 	}
 
@@ -133,6 +129,29 @@ func (h *Host) UpdateManifest() error {
 	return nil
 }
 
+// SearchForGateway finds all Gateway services with the
+// state of AwaitingHosts, then tries to connect.
+func (h *Host) SearchForGateway() {
+	h.Must(h.State.Transition(state.SearchingForGateway))
+	gateways, err := h.Consul.GetService(service.Gateway, state.AwaitingHosts)
+	if err != nil {
+		// TODO: wait x seconds, and then search again.
+		fmt.Printf("Error searching for gateway: %v", err)
+		h.Must(h.State.Transition(state.Error))
+		return
+	}
+
+	// Iterate through Gateway services, attempting to connect.
+	h.Must(h.State.Transition(state.ConnectingToGateway))
+	for i := range gateways {
+		g := gateways[i]
+		fmt.Printf("Gateway found: %v\n", g.ID)
+	}
+}
+
+// func (h *Host) ConnectToGateway() error {
+// }
+
 // Recover is used to recover from panic attacks.
 func (h *Host) Recover() {
 	if err := recover(); err != nil {
@@ -141,7 +160,7 @@ func (h *Host) Recover() {
 }
 
 // Must handles errors and may include error reporting such
-// as posting errors to a message queue before recoverinh.
+// as posting errors to a message queue before recovering.
 func (h *Host) Must(err error) {
 	if err != nil {
 		// Log error? Recover?
@@ -153,7 +172,7 @@ func (h *Host) Must(err error) {
 // an RFC4122 unique ID (See https://toolh.ietf.org/html/rfc4122).
 func New() *Host {
 	// Generate a UUID using V1 which incorporates both
-	// timestamp and MAC address, and convert to string
+	// timestamp and MAC address, and convert to string.
 	uuid := uuid.NewV1().String()
 
 	return &Host{
