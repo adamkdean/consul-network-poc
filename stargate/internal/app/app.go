@@ -22,10 +22,12 @@ import (
 // Stargate is the authoritative DNS layer
 // for the DADI Cloud decentralized network.
 type Stargate struct {
-	ID           string
-	Consul       *consul.Instance
-	State        *fsm.StateMachine
-	UpdatePeriod int
+	ID             string
+	Consul         *consul.Instance
+	State          *fsm.StateMachine
+	UpdatePeriod   int
+	PrunePeriod    int
+	StaleThreshold int
 }
 
 // Initialize the service, creating a new instance of
@@ -35,6 +37,7 @@ func (s *Stargate) Initialize(addr string) {
 	s.InitializeState()
 	s.InitializeService(addr)
 	s.InitializeManifestUpdateCycle()
+	s.InitializeServicePruneCycle()
 }
 
 // InitializeState creates a new state machine instance and
@@ -59,7 +62,8 @@ func (s *Stargate) InitializeState() {
 	s.State.OnTransition("*", ch)
 }
 
-// InitializeService ...
+// InitializeService initializes the Consul client, then registers
+// a service with them, and creates the current service manifest.
 func (s *Stargate) InitializeService(addr string) {
 	s.Consul = consul.New()
 	s.Must(s.Consul.Initialize(addr))
@@ -68,7 +72,7 @@ func (s *Stargate) InitializeService(addr string) {
 	s.Must(s.State.Transition(state.Ready))
 }
 
-// InitializeManifestUpdateCycle ...
+// InitializeManifestUpdateCycle handles the manifest update cycle.
 func (s *Stargate) InitializeManifestUpdateCycle() {
 	go func() {
 		for {
@@ -76,6 +80,26 @@ func (s *Stargate) InitializeManifestUpdateCycle() {
 				fmt.Printf("Error updating manifest: %v\n", err)
 			}
 			time.Sleep(time.Duration(s.UpdatePeriod) * time.Second)
+		}
+	}()
+}
+
+// InitializeServicePruneCycle handles the service prune cycle.
+func (s *Stargate) InitializeServicePruneCycle() {
+	go func() {
+		for {
+			// Attempt to prune stale Hosts first.
+			if err := s.PruneStaleServices(service.Host); err != nil {
+				fmt.Printf("Error pruning stale Hosts: %v\n", err)
+			}
+
+			// Next, attempt to prune stale Gateaways.
+			if err := s.PruneStaleServices(service.Gateway); err != nil {
+				fmt.Printf("Error pruning stale Gateways: %v\n", err)
+			}
+
+			// Now we wait for the next cycle.
+			time.Sleep(time.Duration(s.PrunePeriod) * time.Second)
 		}
 	}()
 }
@@ -111,9 +135,9 @@ func (s *Stargate) UpdateService(state string) error {
 func (s *Stargate) UpdateManifest() error {
 	ts := time.Now().Unix()
 	key := fmt.Sprintf("%s/%s", service.Stargate, s.ID)
-	manifest := &consul.StargateManifest{
+	manifest := &consul.ServiceManifest{
 		ID:         s.ID,
-		Service:    service.Stargate,
+		Type:       service.Stargate,
 		LastActive: ts,
 	}
 
@@ -122,6 +146,52 @@ func (s *Stargate) UpdateManifest() error {
 	}
 
 	fmt.Printf("Updated manifest with LastActive %v\n", ts)
+	return nil
+}
+
+// PruneStaleServices finds services that are inactive, and prunes them.
+func (s *Stargate) PruneStaleServices(sv string) error {
+	// Get a list of ServiceManifest for this service type.
+	services, err := s.Consul.GetServiceManifests(sv)
+	if err != nil {
+		return err
+	}
+
+	// Debug variables.
+	active := 0
+	stale := 0
+	removed := 0
+
+	// What is the oldest the active timestamp can be?
+	thr := time.Now().Add(time.Duration(s.StaleThreshold) * time.Second * -1)
+
+	// Iterate through all services, and remove any that are stale.
+	for i := range services {
+		if thr.After(time.Unix(services[i].LastActive, 0)) {
+			fmt.Printf("Service (%s) %s is stale, removing...\n", sv, services[i].ID)
+			stale++
+
+			// Deregister the service from Consul.
+			if err := s.Consul.DeregisterService(services[i].ID); err != nil {
+				return err
+			}
+
+			// Remove the manifest from the KV.
+			if err := s.Consul.RemoveServiceManifest(sv, services[i].ID); err != nil {
+				return err
+			}
+
+			fmt.Printf("Service (%s) %s removed\n", sv, services[i].ID)
+			removed++
+		} else {
+			fmt.Printf("Service (%s) %s is active\n", sv, services[i].ID)
+			active++
+		}
+	}
+
+	fmt.Printf("Service (%s) total/active/stale/removed: %d/%d/%d/%d\n",
+		sv, len(services), active, stale, removed)
+
 	return nil
 }
 
@@ -150,7 +220,9 @@ func New() *Stargate {
 	uuid := uuid.NewV1().String()
 
 	return &Stargate{
-		ID:           uuid,
-		UpdatePeriod: 5,
+		ID:             uuid,
+		UpdatePeriod:   5,
+		PrunePeriod:    10,
+		StaleThreshold: 20,
 	}
 }
