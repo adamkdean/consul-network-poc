@@ -15,6 +15,7 @@ package state
 const (
 	Initializing        = "INITIALIZING"
 	AwaitingHosts       = "AWAITING_HOSTS"
+	WaitingBeforeRetry  = "WAITING_BEFORE_RETRY"
 	SearchingForGateway = "SEARCHING_FOR_GATEWAY"
 	ConnectingToGateway = "CONNECTING_TO_GATEWAY"
 	GatewayConnected    = "GATEWAY_CONNECTED"
