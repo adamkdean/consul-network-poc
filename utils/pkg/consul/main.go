@@ -116,6 +116,13 @@ func (i *Instance) GetHostManifests() ([]*HostManifest, error) {
 	return manifests, nil
 }
 
+// RemoveServiceManifest ...
+func (i *Instance) RemoveServiceManifest(service, id string) error {
+	key := fmt.Sprintf("%s/%s", service, id)
+	_, err := i.KV.Delete(key, nil)
+	return err
+}
+
 // KeyExists ...
 func (i *Instance) KeyExists(key string) bool {
 	kvp, _, err := i.KV.Get(key, nil)
