@@ -84,6 +84,8 @@ func (i *Instance) GetServiceManifest(sv, id string) (*ServiceManifest, error) {
 		return nil, err
 	}
 
+	fmt.Printf("kvp: %v\n", kvp)
+
 	// Parse the key value pair into a ServiceManifest struct
 	m := &ServiceManifest{}
 	json.Unmarshal(kvp.Value, &m)
