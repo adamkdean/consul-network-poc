@@ -7,9 +7,10 @@
   packages = [
     "utils/pkg/consul",
     "utils/pkg/fsm",
+    "utils/pkg/service",
     "utils/pkg/state"
   ]
-  revision = "9852ba07a9da52ef6b7e54aef2207a13c64990a4"
+  revision = "b146b4e816a5e809c85a8b062f82f399cb83929a"
 
 [[projects]]
   name = "github.com/hashicorp/consul"
@@ -56,6 +57,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "51d1b00b4dfe7315c6fe7c7889e152a29e3b61fccd730621c810a81e59068b35"
+  inputs-digest = "e960c6ab78d239b10f299611beae6720b3587494b88a7a08195ae957722f0beb"
   solver-name = "gps-cdcl"
   solver-version = 1

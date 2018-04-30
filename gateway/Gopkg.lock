@@ -7,9 +7,10 @@
   packages = [
     "utils/pkg/consul",
     "utils/pkg/fsm",
+    "utils/pkg/service",
     "utils/pkg/state"
   ]
-  revision = "9852ba07a9da52ef6b7e54aef2207a13c64990a4"
+  revision = "b146b4e816a5e809c85a8b062f82f399cb83929a"
 
 [[projects]]
   name = "github.com/gorilla/context"
@@ -68,6 +69,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f75eb4796fe81b929ab81e68b34a43d2351fa15603a96bf7a2bdbce47adaaebc"
+  inputs-digest = "a485cc6344a32c0ec82f1012d4564021157d804e2ac4ed8d84cecc94f960e93c"
   solver-name = "gps-cdcl"
   solver-version = 1
