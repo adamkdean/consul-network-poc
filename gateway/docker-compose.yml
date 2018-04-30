@@ -18,15 +18,23 @@ services:
       - test-network
     command: "agent -retry-join consul-server -client 0.0.0.0"
 
-  gateway:
+  gateway1:
     image: "local/consul-poc/gateway:latest"
-    container_name: gateway
-    hostname: gateway
+    container_name: gateway1
+    hostname: gateway1
     environment:
       - CONSUL_ADDRESS=consul-agent-1:8500
       - LISTEN_PORT=8000
-    ports:
-      - 8000:8000
+    networks:
+      - test-network
+
+  gateway2:
+    image: "local/consul-poc/gateway:latest"
+    container_name: gateway2
+    hostname: gateway2
+    environment:
+      - CONSUL_ADDRESS=consul-agent-1:8500
+      - LISTEN_PORT=8000
     networks:
       - test-network
 
