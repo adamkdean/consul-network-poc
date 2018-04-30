@@ -12,8 +12,9 @@
 package consul
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"github.com/adamkdean/consul-network-poc/utils/pkg/service"
 	"github.com/hashicorp/consul/api"
 )
 
@@ -75,11 +76,44 @@ func (i *Instance) GetService(service, tag string) ([]*api.CatalogService, error
 	return s, nil
 }
 
-// GetServiceManifests ...
-func (i *Instance) GetServiceManifests(service string) ([]*api.KVPair, error) {
-	prefix := fmt.Sprintf("%s/", service)
+// GetGatewayManifests ...
+func (i *Instance) GetGatewayManifests() ([]*GatewayManifest, error) {
+	// Get a list of key value pairs for service prefix
+	prefix := fmt.Sprintf("%s/", service.Gateway)
 	kvp, _, err := i.KV.List(prefix, nil)
-	return kvp, err
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse the key value pairs into GatewayManifest structs
+	manifests := []*GatewayManifest{}
+	for i := range kvp {
+		m := &GatewayManifest{}
+		json.Unmarshal(kvp[i].Value, &m)
+		manifests = append(manifests, m)
+	}
+
+	return manifests, nil
+}
+
+// GetHostManifests ...
+func (i *Instance) GetHostManifests() ([]*HostManifest, error) {
+	// Get a list of key value pairs for service prefix
+	prefix := fmt.Sprintf("%s/", service.Host)
+	kvp, _, err := i.KV.List(prefix, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse the key value pairs into HostManifest structs
+	manifests := []*HostManifest{}
+	for i := range kvp {
+		m := &HostManifest{}
+		json.Unmarshal(kvp[i].Value, &m)
+		manifests = append(manifests, m)
+	}
+
+	return manifests, nil
 }
 
 // KeyExists ...
