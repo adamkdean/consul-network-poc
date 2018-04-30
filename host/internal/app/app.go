@@ -28,6 +28,7 @@ type Host struct {
 	Consul       *consul.Instance
 	State        *fsm.StateMachine
 	UpdatePeriod int
+	RetryDelay   int
 }
 
 // Initialize the service, creating a new instance of
@@ -48,7 +49,8 @@ func (h *Host) InitializeState() {
 	h.State.Initialize(map[string][]string{
 		state.Initializing:        []string{state.SearchingForGateway},
 		state.SearchingForGateway: []string{state.ConnectingToGateway, state.Error},
-		state.ConnectingToGateway: []string{state.GatewayConnected, state.Error},
+		state.ConnectingToGateway: []string{state.GatewayConnected, state.WaitingBeforeRetry, state.Error},
+		state.WaitingBeforeRetry:  []string{state.SearchingForGateway},
 		state.GatewayConnected:    []string{},
 		state.Error:               []string{},
 	}, state.Initializing)
@@ -164,6 +166,13 @@ func (h *Host) SearchForGateway() {
 			break
 		}
 	}
+
+	// If we're not "connected", wait, and then retry.
+	if h.State.CurrentState != state.GatewayConnected {
+		h.Must(h.State.Transition(state.WaitingBeforeRetry))
+		time.Sleep(time.Duration(h.RetryDelay) * time.Second)
+		h.SearchForGateway()
+	}
 }
 
 // ConnectToGateway attempts to connect to a Gateway.
@@ -220,5 +229,6 @@ func New() *Host {
 	return &Host{
 		ID:           uuid,
 		UpdatePeriod: 5,
+		RetryDelay:   30,
 	}
 }
