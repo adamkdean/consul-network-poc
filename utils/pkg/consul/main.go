@@ -84,7 +84,7 @@ func (i *Instance) GetServiceManifest(sv, id string) (*ServiceManifest, error) {
 		return nil, err
 	}
 
-	fmt.Printf("kvp: %v\n", kvp)
+	fmt.Printf("%s: %v\n", key, kvp)
 
 	// Parse the key value pair into a ServiceManifest struct
 	m := &ServiceManifest{}
