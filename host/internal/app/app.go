@@ -16,6 +16,7 @@ import (
 	"github.com/adamkdean/consul-network-poc/utils/pkg/service"
 	"github.com/adamkdean/consul-network-poc/utils/pkg/state"
 	"github.com/satori/go.uuid"
+	"net/http"
 	"time"
 )
 
@@ -23,6 +24,7 @@ import (
 // the DADI Cloud decentralized network.
 type Host struct {
 	ID           string
+	GatewayID    string
 	Consul       *consul.Instance
 	State        *fsm.StateMachine
 	UpdatePeriod int
@@ -119,13 +121,14 @@ func (h *Host) UpdateManifest() error {
 		ID:         h.ID,
 		Type:       service.Host,
 		LastActive: ts,
+		GatewayID:  h.GatewayID,
 	}
 
 	if err := h.Consul.WriteStructToKey(key, manifest); err != nil {
 		return fmt.Errorf("error updating manifest: %v", err)
 	}
 
-	fmt.Printf("Updated manifest with LastActive %v\n", ts)
+	fmt.Printf("Updated manifest %v\n", manifest)
 	return nil
 }
 
@@ -143,14 +146,53 @@ func (h *Host) SearchForGateway() {
 
 	// Iterate through Gateway services, attempting to connect.
 	h.Must(h.State.Transition(state.ConnectingToGateway))
+	fmt.Printf("gateways: %v\n", gateways)
+
 	for i := range gateways {
-		g := gateways[i]
-		fmt.Printf("Gateway found: %v\n", g.ID)
+		fmt.Printf("Gateway found: %v\n", gateways[i])
+		m, err := h.Consul.GetServiceManifest(service.Gateway, gateways[i].ServiceID)
+		if err != nil {
+			fmt.Printf("Error getting service manifest: %v\n", err)
+			continue
+		}
+
+		fmt.Printf("Gateway manifest: %v\n", m)
+
+		if err := h.ConnectToGateway(m.ID, m.Address, m.Port); err != nil {
+			fmt.Printf("Error connecting to gateway: %v\n", err)
+		} else {
+			break
+		}
 	}
 }
 
-// func (h *Host) ConnectToGateway() error {
-// }
+// ConnectToGateway attempts to connect to a Gateway.
+func (h *Host) ConnectToGateway(gid, addr string, port int) error {
+	// Construct the URL and request object.
+	url := fmt.Sprintf("http://%s:%d/register/%s", addr, port, h.ID)
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		return err
+	}
+
+	// Perform the blank POST request.
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Ensure that we are accepted by the Gateway (HTTP 202 Accepted).
+	if resp.StatusCode != 202 {
+		return fmt.Errorf("Gateway rejected. HTTP Response: %v", resp.StatusCode)
+	}
+
+	// Update our state to GATEWAY_CONNECTED.
+	h.Must(h.State.Transition(state.GatewayConnected))
+	h.GatewayID = gid
+	return nil
+}
 
 // Recover is used to recover from panic attacks.
 func (h *Host) Recover() {
